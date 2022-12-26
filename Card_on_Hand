@@ -1,0 +1,23 @@
+class Image_Reg:
+  def lookahead(iterable):
+    it = iter(iterable)
+    last = next(it)
+    for val in it:
+        # Report the *previous* value (more to come).
+        yield last, True
+        last = val
+    yield last, False
+    
+    
+    def Filtered_Deck(self, image_of_hand):
+      isolation = np.asarray([[[50, 140, 140], [70, 255, 255]], [[0, 200, 200], [10, 255, 255]],
+                                [[105, 160, 180], [150, 255, 255]]]).astype(np.uint8)
+      block_x, block_y, _= image_of_hand.shape
+      deck_image=image_of_hand[:, int(block_y/2):block_y,:]
+      deck_image=cv.cvtColor(deck_image,cv.COLOR_BGRA2HSV)
+      canvas=np.zeros((block_x,int(block_y/2),3),np.uint8)
+      for interval in isolation:
+        mask = cv.inRange(img2, interval[0], interval[1])
+        imgg = cv.bitwise_or(img, img, mask=mask)
+        canvas=cv.bitwise_or(imgg,canvas)
+      return canvas
