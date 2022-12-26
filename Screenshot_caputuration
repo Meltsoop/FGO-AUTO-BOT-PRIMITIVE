@@ -1,0 +1,52 @@
+import win32gui as gui
+import win32con as con 
+import win32ui as ui
+import numpy
+
+name_window=""
+
+def Get_Bit_Map(Window_Title_List):#Caution when more than 1 Title name == BlueStack#  Return np.array
+    for i in Window_Title_List:
+        if((i[0].lower()).find("bluestacks")!=-1):
+            global name_window
+            name_window=i[0]
+    hwnd=gui.FindWindow(None, name_window)
+    Window_Rect=gui.GetWindowRect(hwnd)
+    ###Extract Information from given Handler
+    width=Window_Rect[2]-Window_Rect[0]
+    height=Window_Rect[3]-Window_Rect[1]
+
+    wDc= gui.GetWindowDC(hwnd)
+    dcObj = ui.CreateDCFromHandle(wDc)
+    cDC = dcObj.CreateCompatibleDC()
+    Data_BitMap= ui.CreateBitmap()
+    Data_BitMap.CreateCompatibleBitmap(dcObj,width,height)
+    cDC.SelectObject(Data_BitMap)
+    cDC.BitBlt((0, 0), (width, height), dcObj, (8, 30), con.SRCCOPY)
+    #71099868
+    Signed_Int_Array=Data_BitMap.GetBitmapBits(True)
+    image=(np.frombuffer(Signed_Int_Array, dtype=np.uint8)).reshape((height,width, 4))
+    #Release Memory
+    dcObj.DeleteDC()
+    cDC.DeleteDC()
+    gui.ReleaseDC(hwnd, wDc)
+    gui.DeleteObject(Data_BitMap.GetHandle())
+    return image
+
+    #Release Memory
+    dcObj.DeleteDC()
+    cDC.DeleteDC()
+    gui.ReleaseDC(hwnd, wDc)
+    gui.DeleteObject(Data_BitMap.GetHandle())
+    return image
+    
+    
+def All_Active_Handlers():#return tulpe of name
+  name_tulpe=[]
+  def Enum_Windows(hwd, ctx):
+    if gui.IsWindowVisible(hwd):
+      name= [gui.GetWindowText(hwd), hex(hwd)]
+      if name[0] !='':
+          name_tulpe.append(name)
+  gui.EnumWindows(Enum_Windows, None)
+  return name_tulpe
